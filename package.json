@@ -5,6 +5,7 @@
   "main": "server.js",
   "devDependencies": {},
   "dependencies": {
+    "node-sass": "^4.12.0",
     "nodemon": "^1.19.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
