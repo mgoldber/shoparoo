@@ -117,3 +117,156 @@ const { URL, PORT } = require('./utils/constants');
 Destructuring can be used as there is an object coming from the exports from the constants file. As we know that there is a URL and PORT specified in the constants file, we can extract each of them. 
 
 Next, we are going to ensure that we can properly use our middleware. We are going to create a function within our utils that will allow us to utilize our middleware. The `require` command has a lot of nice built in functionality. One nice thing that it allows is in the event that your require a folder, the command will look for an `index.js` file within that folder automatically to seek out the functionality. 
+
+You should now create an `index.js` file inside of your utils folder. We are going to write a function inside of the `index.js` file called `applyMiddleware`. 
+
+TODO: ADD NOTES ON HOW THIS FUNCTION ACTUALLY WORKS.
+
+This function should be written as the following:
+
+```js
+exports.applyMiddleware = (middlewareWrapper, router) => {
+    for (const wrapper of middlewareWrapper) {
+        wrapper(router);
+    }
+}
+```
+
+As we have exported the function, we can now import it into our `server.js` file. This can be done with the following line:
+
+```js
+const { applyMiddleware } = require('./utils'); 
+```
+
+We are using destructuring, as well as the built in functionality of require that specifies that since we are only telling it to look in the utils folder, that it will reference the `index.js` file.
+
+The next thing that we are going to do is ensure that our routing is set up. 
+
+The initial functionality that we want to set up is authentication.
+
+// AUTHENTICATION
+
+In order to ensure that we are able to handle authentication for our application, we need to be able to store users in our database. In order to this up, we are going to create a folder called `users` within our `routes` folder. The process to set up our users routes can be duplicated for all additional routes that we want to set up.
+
+Within our `users` folder, we are going to create three separate files. The files will be called `userModel.js`, `userRoutes.js`, and `userService.js`.
+
+`userModel.js`: This will be responsible for setting up our user schema, as well as identifying behaviours that should occur when interacting with the user model.
+
+`userRoutes.js`: We will specify the logic that will happen when hitting different endpoints related to our users.
+
+`userService.js`: This will contain helper functions that we can use within our routes to perform important actions.
+
+Lets start with the `userModel.js` file. We create our schemas with Mongoose. We should add the following imports to the top of `userModel.js` in order to set up our schema.
+
+```js
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
+```
+
+As we have imported our destructured Schema, we can use it to create our user schema. The following is the structure to set up a new schema:
+
+```js
+const userSchema = new Schema({
+
+});
+```
+
+We would like for each of our users to have an email and a password that will allow them to login. Therefore, we need to add this to our user schema:
+
+```js
+const userSchema = new Schema({
+    email: {
+        type: String,
+        unique: true,
+        required: true
+    },
+    password: {
+        type: String,
+        required: true
+    }
+});
+```
+
+Both of these fields are required in order for the user to be valid. So we use the built in `required` flag in Mongoose that allows us to specify that the user should not be saved if these fields are not present. We will also make use of the `unique` flag for the email property to ensure that no two users in our system have the same email. 
+
+Mongoose exposes a pre-save hook called the `.pre` method that allows us to specify functionality that should execute prior to the save function being called. This is very useful for specifying important actions that must occur prior to the new entry being saved in our database. For example, though we specifide the password type as `String` within our schema - this should never be saved as a plaintext string. We are going to use the `pre` method to hash a password so that we can appropriately encrypt our password prior to saving the user in our database.
+
+We are going to utilize a popular encryption module called bcryptjs. This module exposes a hash function that completes a randomized hash for us and returns a string that we can safely store within our database without risking dangerously storing plaintext passwords. Return to your commandline and run the following command:
+
+```shell
+npm install brcryptjs
+```
+
+Then within your `userModel.js` file, you can require the module.
+
+```js
+const bcrypt = require('bcryptjs');
+```
+
+Now we can start writing our pre method that will complete the hashing of our password. The syntax for this method is as follows:
+
+```js
+userSchema.pre('save', async function(next) {
+
+});
+```
+
+This method takes two arguments. The first argument is the event trigger (which is passed in as a string), and the second argument is the callback function to execute. We are specifying `save` as the event that we wish to trigger this event prior to.
+
+We are going to take advantage of some built in Mongoose methods that will let us know if the user's password is being changed, or if a new user is being created. The `.isModified` method returns true if the specified document was modified. The `.isNew` method returns true if the document is new. We only want to hash our password in the event that one of these cases are true.
+
+```js
+userSchema.pre('save', async function(next) {
+    const user = this;
+
+    if (user.isModified('password') || user.isNew) {
+
+    }
+});
+```
+
+Within the conditional check we are going to hash the password, and assign it to our user password field. The `.hash` method allows us to pass the plaintext password, as well as a value for the number of salt rounds that we would like to secure our password with.
+
+```js
+userSchema.pre('save', async function(next) {
+    const user = this;
+
+    if (user.isModified('password') || user.isNew) {
+        try {
+            const hash = await bcrypt.hash(user.password, 10);
+            user.password = hash;
+        } catch (e) {
+            
+        }
+    }
+});
+```
+
+We utilize the `next()` function. This specifies that the next action should occur following all of the actions that run in our pre save. We will add the next function wherever the pre function has completed its work. In the event that an error is thrown, we are able to pass this into the `next()` function as well.
+
+```js
+userSchema.pre('save', async function(next) {
+    const user = this;
+
+    if (user.isModified('password') || user.isNew) {
+        try {
+            const hash = await bcrypt.hash(user.password, 10);
+            user.password = hash;
+            return next();
+        } catch (e) {
+            return next(e);
+        }
+    } else {
+        return next();
+    }
+});
+```
+
+Finally, we need to export the schema as a model at the bottom of the file. The following line allows us to do this:
+
+```js
+exports.model = mongoose.model('User', userSchema);
+```
+
+Next, we are going to work on the routes file for our users. Go into your users folder and create a new file called `userRoutes.js`.
+

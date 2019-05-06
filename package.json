@@ -5,8 +5,11 @@
   "main": "server.js",
   "devDependencies": {},
   "dependencies": {
+    "bcrypt": "^3.0.6",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "express": "^4.16.4",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.5.5",
     "node-sass": "^4.12.0",
     "nodemon": "^1.19.0",
