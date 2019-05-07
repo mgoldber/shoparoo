@@ -348,3 +348,132 @@ Finally, we want to ensure that our routes are being appropriately exported. At 
 exports.router = router; 
 ```
 
+// ADD NOTES HERE ON INCORPORATING SIGN UP FLOW WHICH DOES THE CREATE USER CALL - WITHIN THE REACT APP
+
+Now that we are able to register a new user, we want to ensure that this user is able to sign in, as well as have a token generated in order to continue navigating the application, and accessing the routes that may be locked down.
+
+We are going to add a route into our `userRoutes.js` file that will handle our login for us. The expectation for what should happen at this endpoint is the following:
+
+1. Verify that the user is an actual user in our system.
+2. Verify the user login details.
+3. Generate a random token for the user. 
+
+We will start with adding the familiar route structure that we use to provide code for any of our routes. The following can go below our `/` route:
+
+```js
+router.route('/login')
+    .post(async (req, res, next) => {
+        
+    });
+```
+
+We are going to use more helper functions to help us accomplish the above mentioned actions. The first function we need is to check if the user exists in our system. We will add the following to our `userService.js` file:
+
+```js
+exports.isUser = async ({ email, password }) => {
+
+}
+```
+
+This will use the user's email to run the mongoose method of `.find()` to see if a user with that email exists as an entry in our database. In the event that the user is found, we will use another mongoose method called `comparePassword()` that securely checks if a provided password matches the salted password in the database.
+
+We can add the following to the above code:
+
+```js
+exports.isUser = async ({ email, password }) => {
+    try {
+        const [user] = await User.find({ email });
+        if (user) {
+            const match = await user.comparePassword(password);
+            if (match) {
+                return user;
+            }
+        }
+    } catch (e) {
+        throw e;
+    }
+}
+```
+
+We can now confidently return the user if found is found in the database, and the password provided at the login stage matches. Next, we are going to focus on the token generation.
+
+To keep our code clean, we are going to create a new services file that will handle all actions related to our token.
+
+Inside of our `utils` folder, we will create a new file called `tokenService.js`. This file is going to use JWT in order to generate the random token for us. On your command line, run `npm install jsonwebtoken` in order to bring in the necessary module to get this random token generation working.
+
+At the top of your `tokenService.js` file, add the following line:
+
+```js
+const jwt = require('jsonwebtoken');
+```
+
+We are going to create a function to issue a new token. We are going to pass the user information in so that we can be sure that the token that is being generated is the one related to the specified user. Each entry in our MongoDB has a unique ID that we can use to uniquely identify the user.:
+
+```js
+exports.issueToken = async (userData) => {
+    const { _id: id } = userData;
+
+    const payload = {
+        user: {
+            id
+        }
+    }
+}
+```
+
+We are going to use a built in method available on the jwt object called `.sign()`. The `.sign()` method takes in a payload, a secret key, and an optional callback and generates a token. In this case, we have the payload which is the user object, however, we still need a secret key. We are going to put our secret key in our constants file. Inside our `constants.js` file within our `utils` folder add the following line:
+
+```js
+exports.SECRET = process.env.SECRET || 'super-secret-passphrase';
+```
+
+The passphrase can be whatever you want it to be as long as it remains secret.
+
+We can then return to our `tokenService.js` file and import our secret key from our constants file with the following line:
+
+```js
+const { SECRET } = require('./constants');
+```
+
+Inside our issueToken function that we were writing previously, we can now add the call to the `.sign()` method.
+
+```js
+exports.issueToken = async (userData) => {
+    const { _id: id } = userData;
+
+    const payload = {
+        user: {
+            id
+        }
+    };
+
+    return jwt.sign(payload, SECRET);
+}
+```
+
+Now that we have written the necessary helper functions for our login, we can return to our `userRoutes.js` file to complete all of the actions related to a user login.
+
+```js
+router.route('/login')
+    .post(async (req, res, next) => {
+        try {
+            const user = await userService.isUser(req.body);
+            if (user) {
+                const token = await tokenService.issueToken(user);
+                res.status(200).json({
+                    data: [{
+                        token
+                    }]
+                })
+                logRequest(req, res);
+            } else {
+                next()
+            }
+        } catch (e) {
+            next(e);
+        }
+    })
+```
+
+// TIE IN THE REACT LOGIN FORM COMPONENT TO CALL THAT ENDPOINT AND PRINT OUT THE TOKEN THAT IT RETURNS
+

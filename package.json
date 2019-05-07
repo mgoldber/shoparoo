@@ -5,6 +5,9 @@
   "main": "server.js",
   "devDependencies": {},
   "dependencies": {
+    "@material-ui/core": "^3.9.3",
+    "@material-ui/icons": "^3.0.2",
+    "axios": "^0.18.0",
     "bcrypt": "^3.0.6",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
@@ -13,9 +16,12 @@
     "mongoose": "^5.5.5",
     "node-sass": "^4.12.0",
     "nodemon": "^1.19.0",
+    "prop-types": "^15.7.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-scripts": "^3.0.0"
+    "react-router-dom": "^5.0.0",
+    "react-scripts": "^3.0.0",
+    "styled-components": "^4.2.0"
   },
   "scripts": {
     "start:client": "react-scripts start",

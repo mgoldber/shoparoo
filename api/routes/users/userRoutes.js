@@ -17,4 +17,24 @@ router.route('/')
         }
     })
 
+router.route('/login')
+    .post(async (req, res, next) => {
+        try {
+            const user = await userService.isUser(req.body);
+            if (user) {
+                const token = await tokenService.issueToken(user);
+                res.status(200).json({
+                    data: [{
+                        token
+                    }]
+                })
+                logRequest(req, res);
+            } else {
+                next()
+            }
+        } catch (e) {
+            next(e);
+        }
+    })
+
 exports.router = router;
