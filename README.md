@@ -270,3 +270,81 @@ exports.model = mongoose.model('User', userSchema);
 
 Next, we are going to work on the routes file for our users. Go into your users folder and create a new file called `userRoutes.js`.
 
+Within our `userRoutes.js` file, we are going to need to access express in order to access the router and set up our various routes. At the top of our `userRoutes.js` file lets bring in express and router.
+
+```js
+const express = require('express');
+const router = express.Router();
+```
+
+The `.route()` method on the router object allows us to specify the endpoint that we are intending to hit. We are going to set up the route for when the user hits in the endpoint of /api/users/. Each of the routes that we specify within our `users` folder here will assume the start of /api/users.
+
+Router lets us specify the HTTP method that we are interested in of our familiar methods (GET, POST, PUT, DELETE). Depending on the way that the call is made, the code will vary even if the same endpoint is hit. For example, if the application sends a request of /api/users/ as a GET request, this does not necessarily need to behave the same way as sending a request to /api/users as a POST request. When we send a POST request to /api/users/, we would like for our API to create a new user. This can be set up as the following:
+
+```js
+router.route('/')
+    .post(async (req, res, next) => {
+
+    });
+```
+
+We are specifying the '/' endpoint, as well as stating that this is the code that will be run in the event that the request is sent as a POST request.
+
+We could write all of our code within here, but for modularity, we like to separate out our code. We are going to utilize our `userService.js` file to write our helper function of creating a user based on the body of information that is sent in the request body.
+
+In our `userService.js` file we are going to need access to our user model. Remember, this is essentially a skeleton of how we want each user in our system to look. We can import the model into our service file by doing the following:
+
+```js
+const { model: User } = require('./userModel');
+```
+
+We are going to write a helper function to create our user. In order to do this, we would like to instantiate a new instance of our user model, and then save the user to our database.
+
+As this is a helper function that we are going to be using elsewhere, we need to be sure to export the function.
+
+```js
+exports.createUser = async (userData) => {
+    try {
+        const user = new User(userData);
+        return await user.save();
+    } catch (e) {
+        throw e;
+    }
+}
+```
+
+`.save()` is a method in mongoose that allows us to save a document into our MongoDB database. 
+
+Now that we have this function available to us, we can return to our `userRoutes.js` file and add the necessary code to create a user in the event that the application sends a post request to a our /api/user endpoint.
+
+At the top of the file, ensure that you import the userService functions so that we have access to these helpers.
+
+```js
+const userService = require('./userService');
+```
+
+With these functions now available, you can add the following code:
+
+```js
+router.route('/')
+    .post(async (req, res, next) => {
+        try {
+            const user = await userService.createUser(req.body);
+            res.status(201).json({
+                data: [user]
+            });
+            logRequest(req, res);
+        } catch (e) {
+            next(e);
+        }
+    });
+```
+
+This tells our application to create a new user, and send a response of the user object with a status of 201 to assure us that the user has been created.
+
+Finally, we want to ensure that our routes are being appropriately exported. At the bottom of the file, add the following line:
+
+```js
+exports.router = router; 
+```
+
