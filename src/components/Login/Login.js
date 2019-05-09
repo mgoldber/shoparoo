@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
 import styled, { keyframes } from 'styled-components'
-import axios from 'axios'
 import { Container, SubHeader, Cancel, SelectionGroup, Selection, Form, Wrapper } from './styles'
 import { Button, Input, FlexContainer } from '../GlobalStyles'
-import Person from '@material-ui/icons/Person'
+import { setToken } from '../../services/tokenService';
 
 class Login extends Component {
 	state = {
@@ -27,13 +26,14 @@ class Login extends Component {
 		};
 
 		try {
-			const res = await fetch(`http://localhost:3001/api/users/${route}`, fetchConfig);
-			const pls = await res.json()
-			console.log(pls)
+			const res = await fetch(`/api/users/${route}`, fetchConfig);
+			const token = await res.json()
+			console.log(token)
 			// const { token, doc } = res.data.payload
-			// setToken(token)
+			setToken(token.data[0].token);
 
 			// this.props.setUser(doc)
+			this.props.hideLogin();
 		} catch (e) {
 			this.setState({ message: e })
 			console.log(e)

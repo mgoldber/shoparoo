@@ -16,7 +16,6 @@ const { applyMiddleware } = require('./utils');
 const middleWare = require('./middleware');
 
 // Require routes
-const { router: bookRoutes } = require('./routes/books/bookRoutes');
 const { router: userRoutes } = require('./routes/users/userRoutes');
 
 // Require constants
@@ -26,7 +25,6 @@ const { PORT } = require('./utils/constants');
 applyMiddleware(middleWare, router);
 
 // Utilize routes
-router.use('/api/books', bookRoutes);
 router.use('/api/users', userRoutes);  
 
 // Create a server from express instance

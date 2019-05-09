@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
 import Navigation from './Navigation';
 import Login from './Login';
+import Landing from './Landing';
+import StoreItems from './StoreItems';
 import {
     BrowserRouter as Router,
     Route,
+    Switch,
     Link
 } from 'react-router-dom';
 // import './styles/styles.scss';
@@ -31,6 +34,10 @@ class App extends Component {
                 <div>
                     <Navigation user={this.state.user} toggleLogin={this.toggleLogin} logout={this.logout} />
 					{this.state.showLogin && !this.state.user && <Login hideLogin={this.toggleLogin} setUser={this.setUser} />}
+                    <Switch>
+                        <Route exact path="/" component={StoreItems} />
+                        <Route path="/cart" component={Landing} />
+                    </Switch>
                 </div>
             </Router>
         )

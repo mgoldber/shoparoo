@@ -477,3 +477,20 @@ router.route('/login')
 
 // TIE IN THE REACT LOGIN FORM COMPONENT TO CALL THAT ENDPOINT AND PRINT OUT THE TOKEN THAT IT RETURNS
 
+/---------------------------------------------
+ADD NOTE ON SPECIAL PROXY THINGY THAT CREATE-REACT-APP REQUIRES IN DEVELOPMENT
+https://facebook.github.io/create-react-app/docs/proxying-api-requests-in-development
+THIS IS TO ENSURE THAT A SERVER AND CLIENT CAN BE RUNNING IN THE SAME PROJECT
+---------------------------------------------/
+
+USE WINDOW LOCAL STORAGE TO STORE THE TOKEN IN THE CURRENT WINDOW AND ALLOW US TO ACCESS RESTRICTED ROUTES (THIS IS ADDED INTO THE CLIENT APPLICATION INSIDE OF THE SERVICES FOLDER IN THE FILE CALLED TOKENSERVICE.JS)
+
+## Step 3: Working with routing
+
+We are going to set up a separate route for our shopping cart. This will be a separate page that will contain all of the items that we have added to our shopping cart. We are going to use an npm module called `react-router-dom` to set up our routes. `react-router-dom` allows us to specify the components that should render when a different URL is hit. For example, if we hit a URL akin to /shoppingcart/ inside of our application, the should render a component that handles the logic related to the shopping cart (i.e. fetching all of the shopping cart items). Note that this will be behind a restricted route that will require our token because we want to ensure that only the items that our logged in user has added to their shopping cart are shown, and not the shopping cart items of all users.
+
+Now that we have had the user login which generates a token, we need to ensure that we have this token available to us throughout the application. To accomplish this, we are going to utilize `localStorage` available on our window object. This will allow us to access our token anywhere we need it in order to use to it access our restricted routes.
+
+
+
+

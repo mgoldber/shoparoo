@@ -2,6 +2,7 @@ import React from 'react';
 import './navigation.css'
 
 import { NavLink } from 'react-router-dom';
+import Logo from '../../Logo.js';
 import { Button } from '../GlobalStyles.js'
 import styled from 'styled-components';
 
@@ -20,13 +21,8 @@ const Navigation = ({ toggleLogin, user, logout }) => {
 					</NavLink>
 				</Item>
 				<Item>
-					<NavLink to={`/create`} activeClassName="active" className="link">
-						Create
-					</NavLink>
-				</Item>
-				<Item>
-					<NavLink to={`/mypage`} activeClassName="active" className="link">
-						MyPage
+					<NavLink to={`/cart`} activeClassName="active" className="link">
+						Cart
 					</NavLink>
 				</Item>
 				{user ? (
