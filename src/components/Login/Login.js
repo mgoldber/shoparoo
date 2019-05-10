@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import styled, { keyframes } from 'styled-components'
 import { Container, SubHeader, Cancel, SelectionGroup, Selection, Form, Wrapper } from './styles'
 import { Button, Input, FlexContainer } from '../GlobalStyles'
 import { setToken } from '../../services/tokenService';

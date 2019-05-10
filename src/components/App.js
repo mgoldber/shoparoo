@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Navigation from './Navigation';
 import Login from './Login';
-import Landing from './Landing';
+import Cart from './Cart';
 import StoreItems from './StoreItems';
 import {
     BrowserRouter as Router,
@@ -9,7 +9,6 @@ import {
     Switch,
     Link
 } from 'react-router-dom';
-// import './styles/styles.scss';
 
 class App extends Component {
 
@@ -36,7 +35,7 @@ class App extends Component {
 					{this.state.showLogin && !this.state.user && <Login hideLogin={this.toggleLogin} setUser={this.setUser} />}
                     <Switch>
                         <Route exact path="/" component={StoreItems} />
-                        <Route path="/cart" component={Landing} />
+                        <Route path="/cart" component={Cart} />
                     </Switch>
                 </div>
             </Router>

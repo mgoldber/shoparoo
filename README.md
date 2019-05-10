@@ -489,7 +489,47 @@ USE WINDOW LOCAL STORAGE TO STORE THE TOKEN IN THE CURRENT WINDOW AND ALLOW US T
 
 We are going to set up a separate route for our shopping cart. This will be a separate page that will contain all of the items that we have added to our shopping cart. We are going to use an npm module called `react-router-dom` to set up our routes. `react-router-dom` allows us to specify the components that should render when a different URL is hit. For example, if we hit a URL akin to /shoppingcart/ inside of our application, the should render a component that handles the logic related to the shopping cart (i.e. fetching all of the shopping cart items). Note that this will be behind a restricted route that will require our token because we want to ensure that only the items that our logged in user has added to their shopping cart are shown, and not the shopping cart items of all users.
 
-Now that we have had the user login which generates a token, we need to ensure that we have this token available to us throughout the application. To accomplish this, we are going to utilize `localStorage` available on our window object. This will allow us to access our token anywhere we need it in order to use to it access our restricted routes.
+Now that we have had the user login which generates a token, we need to ensure that we have this token available to us throughout the application. To accomplish this, we are going to utilize `localStorage` available on our window object. This will allow us to access our token anywhere we need it in order to use to it access our restricted routes. Inside of the client application (your React application), create a new folder at the route called `services`. Inside of here, we are going to add any files that contain our front-end helper functions. Inside of your `services` folder, create a file called `tokenService.js`. We are going to write 3 functions within this file. 
+
+1. We are going to create a function that sets the token within our local storage.
+2. We are going to write a function that gets the token from our local storage.
+3. We are going to write a function that deletes the token from our local storage object.
+
+The localStorage object offers methods that are very helpful in accomplishing the aforementioned tasks. The first function will be called `setToken` and will take in an argument of the token that we are storing:
+
+```js
+export const setToken = (token) => {
+    
+};
+```
+
+We are then going to use the `setItem` method available on the localStorage object in order to tell the local storage object to hold on to the token for us.
+
+This will look as follows:
+
+```js
+export const setToken = (token) => {
+    localStorage.setItem('token', token);
+};
+```
+
+This is essentially creating a key-value pair with the key being the string of token, and the value being the token itself, which we have passed into the function.
+
+The remaining functions that we are writing will look very similar. For the getToken function, the only difference is that we will return the token that we retrieve within the function. This will looks like the following:
+
+```js
+export const getToken = () => {
+    return localStorage.getItem('token');
+}
+```
+
+Finally, we are going to write our function that will remove the stored token from our local storage. This will utilize the `removeItem` method which finds the item by its key and then deletes it. This can be written as follows:
+
+```js
+export const removeToken = () => {
+    localStorage.removeItem('token');
+}
+```
 
 
 

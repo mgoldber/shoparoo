@@ -18,3 +18,15 @@ router.route('/')
             next(e);
         }
     });
+
+router.route('/:id')
+    .get(async (req, res, next) => {
+        try {
+            const fanny = await fannyService.getFannyById();
+            res.status(200).send({
+                data: fanny
+            });
+        } catch (e) {
+            next(e);
+        }
+    });
