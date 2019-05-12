@@ -3,12 +3,11 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const { schema: reviewSchema } = require('./review/reviewModel.js');
+const { schema: reviewSchema } = require('../review/reviewModel.js');
 
 const fannySchema = new Schema({
     name: String,
     photoUrl: String,
-    designer: String,
     reviews: [reviewSchema]
 });
 
