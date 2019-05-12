@@ -22,8 +22,8 @@ router.route('/')
 router.route('/:id')
     .get(async (req, res, next) => {
         try {
-            console.log(req.query.id);
-            const fanny = await fannyService.getFannyById(req.id);
+            console.log(req.params.id);
+            const fanny = await fannyService.getFannyById(req.params.id);
             res.status(200).send({
                 data: fanny
             });

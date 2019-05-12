@@ -37,7 +37,9 @@ class StoreItems extends Component {
                 localStorage.setItem('cart', JSON.stringify(cart));
             } else { // A shopping cart already exists
                 let pack = cart.find(item => {
-                    return item.id = itemId
+                    console.log(item.id)
+                    console.log(itemId);
+                    return item.id === itemId
                 });
                 if (pack) { // This means increasing item quantity
                     console.log("I guess already found that pack");
@@ -46,7 +48,6 @@ class StoreItems extends Component {
                     localStorage.setItem('cart', JSON.stringify(cart));
                 }
             }
-
         } catch (e) {
            console.log(e.message);
        }
@@ -84,7 +85,7 @@ class StoreItems extends Component {
                         title={tile.name}
                         subtitle={<span>by: {tile.name}</span>}
                         actionIcon={
-                            <IconButton onClick={() => {this.addToShoppingCart(tile.id)}} className="icon">
+                            <IconButton onClick={() => {this.addToShoppingCart(tile._id)}} className="icon">
                                 <AddShoppingCart className="icon"/>
                             </IconButton>
                         }
