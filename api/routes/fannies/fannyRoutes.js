@@ -34,13 +34,12 @@ router.route('/:id')
     });
 
 router.route('/purchase')
-    .post(async (req, res, next) => {
+    .post(requireAuth, async (req, res, next) => {
         try {
-            for (let pack in req.body) {
-                console.log(pack);
-            }
-            console.log(req.body);
-            console.log(req.data);
+            const cartTotal = await fannyService.calculatePriceTotal(req.body.data.packs);
+            res.status(200).send({
+                totalPrice: cartTotal
+            });
         } catch (e) {
             next(e);
         }

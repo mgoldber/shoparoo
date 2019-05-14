@@ -1,16 +1,22 @@
 const tokenService = require('../utils/tokenService');
+const { HTTP401Error } = require('../utils/httpErrors');
 
 module.exports = async (req, res, next) => {
-    const authHeader = req.get('Authorization');
-
+    const authHeader = req.body.headers['Authorization'];
     if (!authHeader) {
         next(new Error('invalid request'));
     } else {
-        const [prefix, token] = authHeader.split(' ');
         try {
-            const decoded = tokenService.verifyToken(token);
-            req.token = decoded;
-            next()
+            const [prefix, token] = authHeader.split(' ');
+            console.log(token);
+            const decoded = await tokenService.verifyToken(token);
+            console.log(decoded);
+            if (decoded) {
+                req.token = decoded;
+                next()
+            } else {
+                next(new HTTP401Error());
+            }
         } catch (e) {
             console.error(e);
         }

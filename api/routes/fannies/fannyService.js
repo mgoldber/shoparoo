@@ -19,3 +19,12 @@ exports.getFannyById = async (fannyId) => {
         throw e;
     }
 }
+
+exports.calculatePriceTotal = async(fannies) => {
+    let costTotal = fannies.map((total) => {
+        return total.data.data.price * total.data.data.quantity;
+    }).reduce((sum, totalCost) => {
+        return sum + totalCost;
+    });
+    return costTotal;
+}

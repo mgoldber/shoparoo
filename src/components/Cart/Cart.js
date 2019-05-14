@@ -23,16 +23,21 @@ class Cart extends Component {
     }
 
     async completePurchase() {
-        console.log("Complete the purchase");
-        const purchase = await axios.post(`/api/fannies/purchase`, 
-            {
-                headers: {'Authorization': `Bearer ${getToken()}`},
-                data: {
-                    packs: this.state.cartItems
+        try {
+            const purchase = await axios.post(`/api/fannies/purchase`, 
+                {
+                    data: {
+                        packs: this.state.cartItems
+                    },
+                    headers: {
+                        'Authorization': `Bearer ${getToken()}`
+                    }
                 }
-            }
-        );
-        console.log(purchase);
+            );
+            console.log(purchase);
+        } catch(e) {
+            console.error(e.message);
+        }
     }
 
     componentDidMount() {
