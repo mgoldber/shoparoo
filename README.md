@@ -677,9 +677,128 @@ try {
 
 And that's it! You are now using the `login` and `signup` endpoints that you wrote earlier, and storing the generated token in local storage for later use.
 
+## Step 4: React Router
+
+We are going to set up a separate route for our shopping cart. This will be a separate page that will contain all of the items that we have added to our shopping cart from the main store. We are going to use an npm module called [`react-router-dom`](https://reacttraining.com/react-router/web/guides/quick-start) to set up our routes. `react-router-dom` allows us to specify the components that should render when a different URL is hit. For example, if we hit a URL such as `WEBSITEURL/cart`inside of our application, this should render a component that handles the logic functionality related to the shopping cart. We are also going to offer a purchase option within this route. The purchase option is going to utilize a restricted route that will require a valid token to be sent to the server in order for the endpoint to run.
+
+To get us started, return to your command line and run the following command:
+
+```shell
+npm install react-router-dom
+```
+
+Setting up routing in your React application starts from the root, or entry point of your React project. Our `App` component. At the top of our `App.js` file, we are going to import the necessary components from the react-router-dom module. We are going to import `BrowserRouter`, `Route`, and `Switch`. Add the following import to the top of the `App.js` file.
+
+```js
+// App.js
+import {
+    BrowserRouter as Router,
+    Route,
+    Switch
+}
+```
+
+We are able to use the `as` keyword to alias a component import to another shorter word. These components can be used within the render return. The `Router` component serves as the wrapper for all of the routing logic that we write.
+
+```js
+// App.js
+render() {
+        return (
+            <Router>
+                
+            </Router>
+        )
+    }
+```
+
+we have already set up some of the components that are going to be nested inside of the router. These components are `StoreItems`, and `Cart`. `StoreItems` represents all of the available available waist packs that our store sells. This component will retrieve all of the packs from our database, map through, and display them in a way that allows for a user to add them to their cart. `Cart` is the component that handles displaying all the packs that the user has added to their cart, and allows for the purchase to be made. 
+
+We are going to modify our `Navigation` component that serves as the header/navigation bar of our application that will contain links to our home page, the cart, as well as a button to complete the login. We are going to ensure that the nav bar is correctly utilizing our routing as well.
+
+As we know, React requires that when we have sibling components, they must utilize a wrapper. We are going to wrap each of the mentioned components within a div.
+
+```js
+// App.js
+render() {
+        return (
+            <Router>
+                <div>
+                    <Navigation user={this.state.user} toggleLogin={this.toggleLogin} logout={this.logout} />
+					{this.state.showLogin && !this.state.user && <Login hideLogin={this.toggleLogin} setUser={this.setUser} />}
+                    <StoreItems />
+                    <Cart />
+                </div>
+            </Router>
+        )
+    }
+```
+
+Navigation is not a part of the main router set up as there will not be a route that will go to our navigation component. To think about it a different way, there will be no `/navigation` route that will redirect to our navigation component. Instead, there will be paths that will go to the other two mentioned components. We are going to use our `Switch` component imported from router-dom to set up these unique routes. This will look like the following:
+
+```js
+// App.js
+render() {
+        return (
+            <Router>
+                <div>
+                    <Navigation user={this.state.user} toggleLogin={this.toggleLogin} logout={this.logout} />
+                    {this.state.showLogin && !this.state.user && <Login hideLogin={this.toggleLogin} setUser={this.setUser} />}
+                    <Switch>
+                        <Route exact path="/" component={StoreItems} />
+                        <Route path="/cart" component={Cart} />
+                    </Switch>
+                </div>
+            </Router>
+        )
+    }
+```
+
+We need to specify `exact` for our `/` home path to prevent continuous re-rendering of of the `StoreItems` component. This occurs because the `/` is also part of the route to cart as this path starts with a slash. This confuses the route and causes the re-render. To mitigate this, we specify that we want the `StoreItems` component to render only exactly when the path the URL hits ends with `/`.
+
+Next, we are going to complete the necessary routing for our navigation bar. Go into the `Navigation.js` component, and we will start adding the necessary components within here.
+
+We are going to use the `NavLink` which is very similar to `Link`, however, it is a special version that adds styling attributes to the rendered element when it matches the current URL.
+
+Inside of the `Item` styled component for Home and Cart, we will add the necessary NavLink component. When we click on Home in the navigation bar, we would like to re-route to the root of our application, or the `/` route. When we click on the cart option, we would like to navigate to the `/cart` URL. This will look like the following:
+
+```jsx
+<ul className="list">
+    <Item>
+        <NavLink exact to={`/`} activeClassName="active" className="link">
+            Home
+        </NavLink>
+    </Item>
+    <Item>
+        <NavLink to={`/cart`} activeClassName="active" className="link">
+            Cart
+        </NavLink>
+    </Item>
+    {user ? (
+        <Button spaced purple small onClick={logout}>
+            Logout
+        </Button>
+    ) : (
+        <Button spaced purple small onClick={toggleLogin}>
+            Login
+        </Button>
+    )}
+</ul>
+```
+
+Note that we still need to use the `exact` keyword when specifying the route to the root of the application. 
+
+And that's it! We have now implemented routing into our application as a way of separating out different pages of our application.
+
+## Step 5: Database Design and Initialization
+
+We want to ensure that we are thinking about how we want our specific application to function when we are thinking about the structure of our database. There are many different options for the collections in our database, and the connections between them. 
+
+We will start off with what we know already. We have a `user` collection in our database that is storing each of our unique users and contains an email property, as well as a password property that stores the encrypted password. Our store is going to be displaying waist bags on the home page. These are databases from Shoparoo's inventory and each pack has unique properties. We will have a collection of `fannies` in order to hold this inventory.
 
 
+## Step 6: Setting up the remaining routes
 
 
+## Step 7: Handling locked down routes
 
 

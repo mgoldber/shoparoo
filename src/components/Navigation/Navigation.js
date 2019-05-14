@@ -2,7 +2,6 @@ import React from 'react';
 import './navigation.css'
 
 import { NavLink } from 'react-router-dom';
-import Logo from '../../Logo.js';
 import { Button } from '../GlobalStyles.js'
 import styled from 'styled-components';
 
