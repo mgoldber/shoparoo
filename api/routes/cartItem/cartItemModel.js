@@ -3,9 +3,12 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const cartSchema = new Schema({
-    fannies: [fannySchema],
+const cartItemSchema = new Schema({
+    fanny: {
+        type: Schema.Types.ObjectId,
+        ref: 'Fanny'
+    },
     quantity: Number
 });
 
-module.exports = mongoose.model('Cart', cartSchema);
+module.exports = mongoose.model('CartItem', cartItemSchema);

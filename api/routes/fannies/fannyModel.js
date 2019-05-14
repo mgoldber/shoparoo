@@ -8,6 +8,8 @@ const { schema: reviewSchema } = require('../review/reviewModel.js');
 const fannySchema = new Schema({
     name: String,
     photoUrl: String,
+    price: Number,
+    quantity: Number,
     reviews: [reviewSchema]
 });
 

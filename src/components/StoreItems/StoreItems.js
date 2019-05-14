@@ -9,7 +9,7 @@ import AddShoppingCart from '@material-ui/icons/AddShoppingCart';
 
 import axios from 'axios';
 
-import { getToken } from '../../services/tokenService';
+import { getCart, addItem } from '../../services/cartService'; 
 
 class StoreItems extends Component {
 
@@ -24,28 +24,26 @@ class StoreItems extends Component {
 
         try {
             // POST request to add item to shopping cart
-            console.log(getToken())
             // Need to get the user token as this is a locked down route
-            const userToken = getToken();
             // Get Fanny Pack Object by ID
             const fannyPack = await axios.get(`/api/fannies/${itemId}`);
             // Do a post request that adds the fannypack to user shopping cart 
-            let cart = JSON.parse(localStorage.getItem('cart')) || [];
-            console.log(cart);
+            let cart = getCart() || [];
             if (cart.length === 0) {
+                fannyPack.data.data.quantity = 1;
                 cart.push(fannyPack);
-                localStorage.setItem('cart', JSON.stringify(cart));
+                addItem(cart);
             } else { // A shopping cart already exists
                 let pack = cart.find(item => {
-                    console.log(item.id)
-                    console.log(itemId);
-                    return item.id === itemId
+                    return item.data.data._id === itemId
                 });
                 if (pack) { // This means increasing item quantity
-                    console.log("I guess already found that pack");
+                    pack.data.data.quantity += 1;
+                    addItem(cart);                    
                 } else { // Add item 
+                    fannyPack.data.data.quantity = 1;
                     cart.push(fannyPack);
-                    localStorage.setItem('cart', JSON.stringify(cart));
+                    addItem(cart);
                 }
             }
         } catch (e) {
@@ -56,7 +54,6 @@ class StoreItems extends Component {
     async fetchFannyPacks () {
         try {
             const res = await axios.get(`/api/fannies/`);
-            console.log(res);
             this.setState({
                 packs: res.data.data
             });
@@ -64,11 +61,6 @@ class StoreItems extends Component {
             console.error(e);
         }
     }
-
-    renderFannyPacks() {
-        
-    }
-
 
     componentDidMount () {
         this.fetchFannyPacks();
@@ -79,7 +71,7 @@ class StoreItems extends Component {
             <Wrapper>
                 <GridList cellHeight={500} className="gridList">
                     {this.state.packs.map(tile => (
-                    <GridListTile key={tile.photoUrl}>
+                    <GridListTile key={tile.photoUrl} >
                         <img src={tile.photoUrl} alt={tile.name} />
                     <GridListTileBar
                         title={tile.name}

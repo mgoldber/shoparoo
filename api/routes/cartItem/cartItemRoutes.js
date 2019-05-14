@@ -3,26 +3,17 @@
 const express = require('express');
 const router = express.Router();
 
-const cartItemService = require('./cartItemService.js');
+const CartItem = require('./cartItemModel');
 
-
-// GET /cartitem/
-router.route('/')
-    .get(async (req, res, next) => {
-        try {
-            
-        } catch (e) {
-            next(e);
-        }
-    })
-
-// POST /cartitem/ (create a new cart item)
+// POST /add/
+router.route('/add')
     .post(async (req, res, next) => {
-        const { body } = req;
         try {
-            const cartItem = await cartItemService.createCartItem(body);
-            res.status(201).json({ data: [cartItem] });
+            const cartItem = new CartItem()
+            cartItem.fanny = req.fannyId;
+            cartItem.quantity = 1;
+            cartItem.save();
         } catch (e) {
             next(e);
         }
-    })
+    });

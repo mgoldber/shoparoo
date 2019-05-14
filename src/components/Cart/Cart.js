@@ -1,18 +1,64 @@
 import React, { Component } from 'react';
 
+import { Wrapper } from './styles';
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
+import GridListTileBar from '@material-ui/core/GridListTileBar';
+import IconButton from '@material-ui/core/IconButton';
+import AddShoppingCart from '@material-ui/icons/AddShoppingCart';
+
+
+import axios from 'axios';
+import { getToken } from '../../services/tokenService';
+
+import { getCart } from '../../services/cartService'; 
+
 class Cart extends Component {
-   
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            cartItems: getCart()
+        }
+    }
+
+    async completePurchase() {
+        console.log("Complete the purchase");
+        const purchase = await axios.post(`/api/fannies/purchase`, 
+            {
+                headers: {'Authorization': `Bearer ${getToken()}`},
+                data: {
+                    packs: this.state.cartItems
+                }
+            }
+        );
+        console.log(purchase);
+    }
 
     componentDidMount() {
         // Access the cart stored in local storage
-        console.log(JSON.parse(localStorage.getItem('cart')));
+        console.log(this.state.cartItems);
     }
 
     render() {
         return (
-            <div>
-                Fun
-            </div>
+            <Wrapper>
+                <GridList cellHeight={500} className="gridList">
+                    {this.state.cartItems.map(item => (
+                        <GridListTile key={item.data.data.photoUrl}>
+                            <img src={item.data.data.photoUrl} />
+                            <GridListTileBar
+                                title={item.data.data.name}
+                                subtitle={<span>by: {item.data.data.name}</span>}
+                            />
+                        </GridListTile>
+                    ))}
+                    <IconButton onClick={() => {this.completePurchase()}} className="icon">
+                        <AddShoppingCart className="icon" />
+                    </IconButton>
+                    
+                </GridList>
+            </Wrapper>
         )
     }
 }

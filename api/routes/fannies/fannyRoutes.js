@@ -5,6 +5,8 @@ const router = express.Router();
 
 const fannyService = require('./fannyService');
 
+const requireAuth = require('../../middleware/auth')
+
 // GET /fannies/
 router.route('/')
     .get(async (req, res, next) => {
@@ -22,11 +24,23 @@ router.route('/')
 router.route('/:id')
     .get(async (req, res, next) => {
         try {
-            console.log(req.params.id);
             const fanny = await fannyService.getFannyById(req.params.id);
             res.status(200).send({
                 data: fanny
             });
+        } catch (e) {
+            next(e);
+        }
+    });
+
+router.route('/purchase')
+    .post(async (req, res, next) => {
+        try {
+            for (let pack in req.body) {
+                console.log(pack);
+            }
+            console.log(req.body);
+            console.log(req.data);
         } catch (e) {
             next(e);
         }
