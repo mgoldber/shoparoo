@@ -312,19 +312,19 @@ const express = require('express');
 const router = express.Router();
 ```
 
-The `.route()` method on the router object allows us to specify the endpoint that we are intending to hit. We are going to set up the route for when the user hits in the endpoint of `/api/users/`. Each of the routes that we specify within our `users` folder here will assume a start of `/api/users`.
+The `.route()` method on the router object allows us to specify the endpoint that we are intending to hit. We are going to set up the route for when the user hits in the endpoint of `/api/users/signup`. Each of the routes that we specify within our `users` folder here will assume a start of `/api/users`.
 
-Router lets us specify the HTTP method that we are interested in of our familiar HTTP methods (GET, POST, PUT, DELETE). Depending on the HTTP method specified in the call, the code can perform different actions even if the same endpoint is hit. For example, if the application sends a request of `/api/users/` as a GET request, this does not necessarily need to behave the same way as sending a request to `/api/users/` as a POST request. For our application, when we send a POST request to `/api/users/`, we would like for our API to create a new user. This can be set up as follows:
+Router lets us specify the HTTP method that we are interested in of our familiar HTTP methods (GET, POST, PUT, DELETE). Depending on the HTTP method specified in the call, the code can perform different actions even if the same endpoint is hit. For example, if the application sends a request of `/api/users/signup` as a GET request, this does not necessarily need to behave the same way as sending a request to `/api/users/signup` as a POST request. For our application, when we send a POST request to `/api/users/signup`, we would like for our API to create a new user. This can be set up as follows:
 
 ```js
 // userRoutes.js
-router.route('/')
+router.route('/signup')
     .post(async (req, res, next) => {
 
     });
 ```
 
-We are specifying the '/' endpoint, as well as stating that this is the code that will be run in the event that the request is sent as a POST request.
+We are specifying the `/signup` endpoint, as well as stating that this is the code that will be run in the event that the request is sent as a POST request.
 
 We could write all of our code within here, but for modularity, we like to separate out our code. We are going to utilize our `userService.js` file to write our helper function of creating a user based on the body of information that is sent in the request body.
 
@@ -353,7 +353,7 @@ exports.createUser = async (userData) => {
 
 `.save()` is a method in mongoose that allows us to add a document into our MongoDB database. 
 
-Now that we have this function available to us, we can return to our `userRoutes.js` file and add the necessary code to create a user in the event that the application sends a post request to a our `/api/user/` endpoint.
+Now that we have this function available to us, we can return to our `userRoutes.js` file and add the necessary code to create a user in the event that the application sends a post request to a our `/api/user/signup` endpoint.
 
 At the top of the file, ensure that you import the userService functions so that we have access to these helper methods.
 
@@ -366,10 +366,10 @@ With these functions now available, you can add the following code:
 
 ```js
 // userRoutes.js
-router.route('/')
+router.route('/signup')
     .post(async (req, res, next) => {
         try {
-            const user = await userService.createUser(req.body);
+            const user = await userService.createUser(req.body.data);
             res.status(201).json({
                 data: [user]
             });
@@ -397,7 +397,7 @@ We are going to add a route into our `userRoutes.js` file that will handle our l
 2. Verify the user login details.
 3. Generate a random token for the user. 
 
-We will start with adding the familiar route structure that we use to provide code for any of our routes. The following can go below our `api/user/` route, and will create an endpoint of `/api/user/login`:
+We will start with adding the familiar route structure that we use to provide code for any of our routes. The following can go below our `/signup` endpoint, and will create an endpoint of `/api/user/login`:
 
 ```js
 // userRoutes.js
@@ -507,13 +507,13 @@ Now that we have written the necessary helper functions for our login, we can re
 router.route('/login')
     .post(async (req, res, next) => {
         try {
-            const user = await userService.isUser(req.body);
+            const user = await userService.isUser(req.body.data);
             if (user) {
                 const token = await tokenService.issueToken(user);
                 res.status(200).json({
-                    data: [{
+                    data: {
                         token
-                    }]
+                    }
                 })
             } else {
                 next();
@@ -524,33 +524,83 @@ router.route('/login')
     })
 ```
 
-// TIE IN THE REACT LOGIN FORM COMPONENT TO CALL THAT ENDPOINT AND PRINT OUT THE TOKEN THAT IT RETURNS  
+### Front-end Integration
+Now that we have set up the necessary routes on the backend for handling our registration and login, we are going to add the functionality to our front-end application. 
 
-## Step 4
+Inside of your `components` folder, you will see a folder containing the necessary files for your `Login` component. Inside of the `Login.js` file, you will see an empty `handleSubmit` function. This function is attached to the login/sign up form submission, and will be called when the `login` or `signup` button are clicked.
 
-## Step 5: Working with routing
+In starting this function, the first thing we want to do is ensure that we are extracting the email and password that were entered in the form. In addition, we need to know if we are in the login form or the sign up form as we have combined the forms in our design. We can extract all of these pieces of information from our state object. Destructuring can be used to accomplish this with the following line:
 
-We are going to set up a separate route for our shopping cart. This will be a separate page that will contain all of the items that we have added to our shopping cart. We are going to use an npm module called `react-router-dom` to set up our routes. `react-router-dom` allows us to specify the components that should render when a different URL is hit. For example, if we hit a URL akin to /shoppingcart/ inside of our application, the should render a component that handles the logic related to the shopping cart (i.e. fetching all of the shopping cart items). Note that this will be behind a restricted route that will require our token because we want to ensure that only the items that our logged in user has added to their shopping cart are shown, and not the shopping cart items of all users.
+```js
+// Login.js
+const { email, password, type } = this.state;
+```
 
-Now that we have had the user login which generates a token, we need to ensure that we have this token available to us throughout the application. To accomplish this, we are going to utilize `localStorage` available on our window object. This will allow us to access our token anywhere we need it in order to use to it access our restricted routes. Inside of the client application (your React application), create a new folder at the route called `services`. Inside of here, we are going to add any files that contain our front-end helper functions. Inside of your `services` folder, create a file called `tokenService.js`. We are going to write 3 functions within this file. 
+Next, we are going to store the form route, or more specifically, whether we're in the login or sign up form:
+
+```js
+// Login.js
+const route = type === 'login' ? 'login' : 'signup'
+```
+
+Finally, we can make our call to the appropriate endpoint depending on if the user is signing up for the first time, or is logging in. We will use the `await` keyword inside of our `async` function in order to make the API call. We will wrap this call inside of a `try-catch` block.
+
+```js
+// Login.js
+try {
+    const res = await axios.post(`/api/users/${route}`, {
+        data: {
+            email: email,
+            password: password
+        }
+    });
+    console.log(res);
+} catch (e) {
+    this.setState({ message: e });
+    console.log(e);
+}
+```
+
+Your `console.log` will show you that the token is nested in the response from the server. To access the token, we have to access the property with the following `res.data.data.token`.
+
+```js
+// Login.js
+try {
+    const res = await axios.post(`/api/users/${route}`, {
+        data: {
+            email: email,
+            password: password
+        }
+    });
+    const token = res.data.data.token;
+} catch (e) {
+    this.setState({ message: e });
+    console.log(e);
+}
+```
+
+We want to ensure that we can access the token throughout our application as we will need it to access any restricted routes. We are going to use [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) for our purposes. This stores the data in the browser session and gives us an accessible key-value storage object wherever we require it in our web application.
+ 
+Create a new folder at the root of our client application called `services`. Inside of here, we are going to add any files that contain our front-end helper functions. Inside of your `services` folder, create a file called `tokenService.js`. We are going to write 3 functions within this file. 
 
 1. We are going to create a function that sets the token within our local storage.
 2. We are going to write a function that gets the token from our local storage.
 3. We are going to write a function that deletes the token from our local storage object.
 
+
 The localStorage object offers methods that are very helpful in accomplishing the aforementioned tasks. The first function will be called `setToken` and will take in an argument of the token that we are storing:
 
 ```js
+// tokenService.js
 export const setToken = (token) => {
     
 };
 ```
 
-We are then going to use the `setItem` method available on the localStorage object in order to tell the local storage object to hold on to the token for us.
-
-This will look as follows:
+We are then going to use the `setItem` method available on the localStorage object in order to tell the local storage object to hold on to the token for us. 
 
 ```js
+// tokenService.js
 export const setToken = (token) => {
     localStorage.setItem('token', token);
 };
@@ -561,18 +611,74 @@ This is essentially creating a key-value pair with the key being the string of t
 The remaining functions that we are writing will look very similar. For the getToken function, the only difference is that we will return the token that we retrieve within the function. This will looks like the following:
 
 ```js
+// tokenService.js
 export const getToken = () => {
     return localStorage.getItem('token');
 }
 ```
 
-Finally, we are going to write our function that will remove the stored token from our local storage. This will utilize the `removeItem` method which finds the item by its key and then deletes it. This can be written as follows:
+Finally, we are going to write our function that will remove the stored token from our local storage. This will utilize the `removeItem` method which finds the item by its key and then deletes it. 
 
 ```js
+// tokenService.js
 export const removeToken = () => {
     localStorage.removeItem('token');
 }
 ```
+
+Now that we have exported these functions to help us manage our token, we want to import the ones we need back into our Login component. We are going to use the `setToken` function as we are generating the token for the first time and want to push it to our localStorage object to ensure that it is available throughout our application. At the top of the `Login.js` file, add the following line:
+
+```js
+// Login.js
+import { setToken } from '../..services/tokenService';
+```
+
+Now we will use the `setToken` function, and pass in the token that we generated earlier.
+
+```js
+// Login.js
+try {
+    const res = await axios.post(`/api/users/${route}`, {
+        data: {
+            email: email,
+            password: password
+        }
+    });
+    const token = res.data.data.token;
+
+    setToken(token) // added this line
+} catch (e) {
+    this.setState({ message: e });
+    console.log(e);
+}
+```
+
+Finally, we are going to add in a call to our `hideLogin` method which we passed in using our props. This is so that the login/signup modal disappears and lets us continue using our application.
+
+```js
+// Login.js
+try {
+    const res = await axios.post(`/api/users/${route}`, {
+        data: {
+            email: email,
+            password: password
+        }
+    });
+    const token = res.data.data.token;
+
+    setToken(token);
+
+    this.props.hideLogin();
+} catch (e) {
+    this.setState({ message: e });
+    console.log(e);
+}
+```
+
+And that's it! You are now using the `login` and `signup` endpoints that you wrote earlier, and storing the generated token in local storage for later use.
+
+
+
 
 
 

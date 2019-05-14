@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Container, SubHeader, Cancel, SelectionGroup, Selection, Form, Wrapper } from './styles'
 import { Button, Input, FlexContainer } from '../GlobalStyles'
+import axios from 'axios';
 import { setToken } from '../../services/tokenService';
 
 class Login extends Component {
@@ -18,20 +19,17 @@ class Login extends Component {
 
 		const route = type === 'login' ? 'login' : 'signup'
 
-		const fetchConfig = {
-			method: 'POST',
-			body: JSON.stringify({ email, password }),
-			headers: { 'Content-Type': 'application/json' }
-		};
-
 		try {
-			const res = await fetch(`/api/users/${route}`, fetchConfig);
-			const token = await res.json()
-			console.log(token)
-			// const { token, doc } = res.data.payload
-			setToken(token.data[0].token);
+			const res = await axios.post(`/api/users/${route}`, {
+				data: {
+					email: email,
+					password: password
+				}
+			})
+			const token = res.data.data.token;
 
-			// this.props.setUser(doc)
+			setToken(token);
+
 			this.props.hideLogin();
 		} catch (e) {
 			this.setState({ message: e })

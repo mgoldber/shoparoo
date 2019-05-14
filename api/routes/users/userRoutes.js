@@ -4,10 +4,10 @@ const router = express.Router();
 const userService = require('./userService');
 const tokenService = require('../../utils/tokenService');
 
-router.route('/')
+router.route('/signup')
     .post(async (req, res, next) => {
         try {
-            const user = await userService.createUser(req.body);
+            const user = await userService.createUser(req.body.data);
             res.status(201).json({
                 data: [user]
             });
@@ -20,13 +20,13 @@ router.route('/')
 router.route('/login')
     .post(async (req, res, next) => {
         try {
-            const user = await userService.isUser(req.body);
+            const user = await userService.isUser(req.body.data);
             if (user) {
                 const token = await tokenService.issueToken(user);
                 res.status(200).json({
-                    data: [{
+                    data: {
                         token
-                    }]
+                    }
                 })
                 logRequest(req, res);
             } else {
