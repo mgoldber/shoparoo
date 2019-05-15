@@ -793,12 +793,361 @@ And that's it! We have now implemented routing into our application as a way of 
 
 We want to ensure that we are thinking about how we want our specific application to function when we are thinking about the structure of our database. There are many different options for the collections in our database, and the connections between them. 
 
-We will start off with what we know already. We have a `user` collection in our database that is storing each of our unique users and contains an email property, as well as a password property that stores the encrypted password. Our store is going to be displaying waist bags on the home page. These are databases from Shoparoo's inventory and each pack has unique properties. We will have a collection of `fannies` in order to hold this inventory.
+We will start off with what we know already. We have a `user` collection in our database that is storing each of our unique users and contains an email property, as well as a password property that stores the encrypted password. Our store is going to be displaying waist bags on the home page. These are databases from Shoparoo's inventory and each pack has unique properties. We will have a collection of `fannies` in order to hold this inventory. Each unique pack has the attributes of name, photoUrl, and price.
+
+In thinking about the online shopping experience, we want to be able to create a cart that will be a collection of our fanny packs. Note that a user of the site has the option to purchase multiples of the same pack. Due to this, we want our cart item to be a reference to the fannypack model. This creates a one-to-many relationship as the cart item can reference any of the fanny packs in our store collection. The other important property that the cart item model has is a value for quantity. This is so that a user is able to purchase multiples of the same pack.
+
+Inside of your `api` folder, you will see a file called `seed.js`. The concept of seeding is populating some initial data into your database that does not get added during the usage of your application. One way to do this is to have a file within utils that has methods available that complete the removal of old data and the population of new data. These methods get run each time the server gets restarted. This is very useful when developing as you can mess around with the data, and always be certain that you have a way to get it back to its initial state. It is also very useful for automated testing so that you are able to control the information that is being loaded into your database. The other option, and the one that we will use for this project, is populating the data through a script. 
+
+Upon looking through the script, you will see that a connection is made to our local mongo database, and we have hardcoded in values for all of the fields that we mentioned we would have on the fannypack model. We are also making use of a module called `faker` that allows us to generate realistic looking fake data. Much like lorem ipsum of your backend. In order to run this file, you must do the following:
+
+1. Ensure that you have mongo running in your command line. If you do not have it running, navigate to the command line and run:
+
+```shell
+mongod
+```
+
+2. Following this, open another command line window and run the file with:
+
+```shell
+node seed.js
+```
+
+Verify that the data populated within your database. If all worked as planned, you should see a new collection called `fannies` within your `shoparoo` database. If you click through the documents, you should see that the fake data has been populated.
 
 
-## Step 6: Setting up the remaining routes
+------------------ TO DO: MAKE A DATABASE DESIGN DIAGRAM ---------------------
 
+## Step 6: Routes, routes, routes
+
+We're making great progress! Our user is able to login, and we have some data to play with. Let's get started with setting up the remaining routes for our API. A great place to start when testing out your routes is to create a route that is able to get all entries in a collection. As we have populated the fanny packs in our database, we should work to make a route to retrieve all of these packs. This will be the endpoint that is called when initially landing on the store page and loading in the store inventory.
+
+We will follow a very similar flow that we did when setting up our user routes. Create a new folder within `routes` called `fannies`. Inside of this folder, create the following three files: `fannyModel.js`, `fannyRoutes.js`, and `fannyService.js`. 
+
+Let's start off with the model. When determining the design of our database, we identified the properties that we would need to include within the fanny model. At the top of the file, we will import the familiar modules, and objects that we will need to utilize:
+
+```js
+// fannyModel.js
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+```
+
+And the skeleton structure for creating a brand new schema:
+
+```js
+// fannyModel.js
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const fannySchema = new Schema({
+    name: String,
+    photoUrl: String,
+    price: Number,
+    quantity: Number
+});
+```
+
+These properties map directly to the fields we created when populating our initial dataset. All that's left is to export this model so that is available for use elsewhere:
+
+```js
+// fannyModel.js
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const fannySchema = new Schema({
+    name: String,
+    photoUrl: String,
+    price: Number,
+    quantity: Number
+});
+
+module.exports = mongoose.model('Fanny', fannySchema);
+```
+
+Now let's move to setting up our routes! Within our `fannyRoutes.js` file, we will import the necessary modules that we will be using:
+
+```js
+// fannyRoutes.js
+const express = require('express');
+const router = express.Router();
+```
+
+Now that we have access to `Router` from Express, we will set up the GET endpoint of /fannies/ that, when hit, will get us all entries in the fanny collection from our database.
+
+```js
+// fannyRoutes.js
+router.route('/')
+    .get(async (req, res, next) {
+        try {
+
+        } catch (e) {
+            next(e);
+        }
+    });
+```
+
+We are going to use a helper method to retrieve the fanny packs from the database. As we have seen previously, we will write these helper methods within our service file. Inside of `fannyService.js`, let's import the fanny model so that we have access to it:
+
+```js
+// fannyService.js
+const Fanny = require('./fannyModel');
+```
+
+With this, thwe are going to write a helper function called `listFannies` that will access all of the packs in the collection:
+
+```js
+// fannyService.js
+exports.listFannies = async () => {
+    try {
+
+    } catch (e) {
+        throw e;
+    }
+}
+```
+
+As we have imported the model, we have access to the methods that are available on the model object. The `.find` method allows us to retrieve documents that match our specified query. If we do not include any specifications, by default, it will return all of the documents:
+
+```js
+// fannyService.js
+exports.listFannies = async () => {
+    try {
+        const fannies = await Fanny.find({});
+        return fannies;
+    } catch (e) {
+        throw e;
+    }
+}
+```
+
+That's it! We are now retrieving all of the documents in the collection. Back in `fannyRoutes.js` we are going to make use of this helper method. At the top of the file, ensure that the service file is being imported:
+
+```js
+// fannyRoutes.js
+const fannyService = require('./fannyService');
+```
+
+And since we have access to the methods, let's make use of it within the GET route:
+
+```js
+// fannyRoutes.js
+router.route('/')
+    .get(async (req, res, next) {
+        try {
+            const fannies = await fannyService.listFannies();
+        } catch (e) {
+            next(e);
+        }
+    });
+```
+
+With our fannies retrieved, we are going to send a response which is all of our fannies, with a success response code.
+
+```js
+// fannyRoutes.js
+router.route('/')
+    .get(async (req, res, next) {
+        try {
+            const fannies = await fannyService.listFannies();
+            res.status(200).send({
+                data: fannies
+            });
+        } catch (e) {
+            next(e);
+        }
+    });
+```
+
+Amazing! We now have an endpoint to retrieve all of the fannies. We know that we are going to be adding packs into our shopping cart. In order to do this, we need a way to select a single pack, as opposed to always having to retrieve the full list. We are going to set up an endpoint, that when passed an ID, will select the fanny pack with the corresponding ID from our database. Express allows us to use a colon (:) within our URL to indicate a parameter that is subject to change. In this example, the ID will change depending on the pack that is selected.
+
+```js
+// fannyRoutes.js
+router.route('/:id')
+    .get(async (req, res, next) {
+        try {
+
+        } catch (e) {
+            next (e);
+        }
+    });
+```
+
+This lets our endpoint know that we are not expecting the literal string 'id', but are instead expecting a value in place of id. We include the name, as this allow us to access the value using `req.params.id`.
+
+Let's return to our `fannyServices` file to create a new helper function that finds a single fanny pack by ID. 
+
+```js
+// fannyService.js
+exports.getFannyById = async () => {
+    try {
+        
+    } catch (e) {
+        throw e;
+    }
+}
+```
+
+We will use another helpful mongoose method which is `findById` instead of just find. We will also ensure that we are passing the ID into the function so that we know which ID to search for in our database.
+
+```js
+// fannyService.js
+exports.getFannyById = async (fannyId) => {
+    try {  
+        const fanny = await Fanny.findById(fannyId);
+        return fanny;
+    } catch (e) {
+        throw e;
+    }
+}
+```
+
+Back in our routes file, we will use this function in a very similar way to how we used the previous one.
+
+```js
+// fannyRoutes.js
+router.route('/:id')
+    .get(async (req, res, next) {
+        try {
+            const fanny = await fannyService.getFannyById(req.params.id);
+            res.status(200).send({
+                data: fanny
+            });
+        } catch (e) {
+            next (e);
+        }
+    });
+```
+
+Let's incorporate these endpoints into our front-end code, after all, that's why we wrote them!
+
+### front-end
+
+Within our React application, we have a folder for `StoreItems` which is responsible for handling the loading of our inventory, as well as the interaction of adding new items to our shopping cart. In our `StoreItems.js` file, you will see the function stub of `fetchFannyPacks`. We are going to write our API call within here in order to retrieve our list of fanny packs. 
+
+```js
+// StoreItems.js
+async fetchFannyPacks() {
+    try {
+        const res = await axios.get('/api/fannies');
+    } catch (e) {
+        console.error(e);
+    }
+}
+```
+
+It is always good practise to review the response that comes back from the server so that you know how to properly handle it:
+
+```js
+// StoreItems.js
+async fetchFannyPacks() {
+    try {
+        const res = await axios.get('/api/fannies');
+        console.log(res);
+    } catch (e) {
+        console.error(e);
+    }
+}
+```
+
+From this, you will see that our array of fanny packs is nested within `res.data.data`. We have set up an initial state of an empty array of packs that we would like to update the state of with the newly fetched packs.
+
+```js
+// StoreItems.js
+async fetchFannyPacks() {
+    try {
+        const res = await axios.get('/api/fannies');
+        this.setState({
+            packs: res.data.data
+        });
+    } catch (e) {
+        console.error(e);
+    }
+}
+```
+
+Amazing! Now when we refresh the page, we should be seeing our fanny packs populate. You will notice that there is a shopping cart icon on each of the cards. We have a function stub set up to add a unique fanny pack to our shopping cart. There are several ways to handle shopping carts in an application. If you would like your shopping cart to persist (an optional extension for this project if you want to challenge yourself), you'll want to store the cart items in your database. Then, upon navigating to the `/cart` route in your front-end, you will retrieve all documents in your `cart` collection from the database. For our purposes, we are not going to make our shopping cart persist, but are instead going to handle it in local storage. This is immensely similar to how we decided to handle our token, and store that in localStorage.
+
+Before we worry about the local storage, we need to ensure that we have the associated fannypack which we will use our `/fannies/:id` route in order to accomplish.
+
+```js
+// StoreItems.js
+async addToShoppingCart(itemId) {
+    try {
+        const fannyPack = await axios.get(`/api/fannies/${itemId}`);
+    } catch (e) {
+        console.log(e.message);
+    }
+}
+```
+
+The itemId is being loaded in on initial load of all of the fanny packs on the page so that it is always available. This will fetch just the unique fanny pack that is associated with that id.
+
+Now we can begin to set up the local storage piece of the application which will follow the following logic:
+
+1. Load in the current shopping cart from local storage, if one doesn't exist create a new one.
+2. If a cart does not currently exist, i.e. there are no items in the cart, increment the quantity of the fanny pack item that we have found and push this to the cart
+3. If a cart already exists, search for the existance of the same fanny pack.
+    3a. If the fanny pack already exists, incremented the quantity value by 1.
+    3b. If the fanny pack does not already exist, add the new item to the cart.
+
+We are going to set up another service file, similar to our `tokenService.js` file that will contain helpers solely related to our shopping cart. Within your `services` folder, create a new file called `cartService.js`. Inside of `cartService.js` add the following functions:
+
+```js
+// cartService.js
+export const getCart = () => {
+    return JSON.parse(localStorage.getItem('cart'));
+}
+
+export const setCart = (cart) => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+}
+```
+
+These functions will allow us to retrieve the current state of the cart, as well as update the cart when we are modifying the quantity values of the fanny packs.
+
+Back in our `StoreItems.js` file, we must ensure that we import the helper functions:
+
+```js
+// StoreItems.js
+import { getCart, setCart } from '../../services/cartService';
+```
+
+Then within `addtoShoppingCart`, we will write the logic that follows the above mentioned steps.
+
+```js
+// StoreItems.js
+async addToShoppingCart(itemId) {
+    try {
+        const fannyPack = await axios.get(`/api/fannies/${itemId}`);
+
+        let cart = getCart() || []; // retrieve current state of cart or create new one
+
+        if (cart.length === 0) { // a cart does not already exist
+            fannyPack.data.data.quantity = 1; // set initial quantity for the cart
+            cart.push(fannyPack);
+            setCart(cart); // push the updated cart to local storage
+        } else { // a shopping cart already exists
+            let pack = cart.find(item => { // see if any of the items in the cart match the item being passed in
+                return item.data.data._id === itemId // the search is being done by ID matching
+            });
+            if (pack) { // this means that the item already exists in the cart
+                pack.data.data.quantity += 1; // update the quantity as the item is already there
+                setCart(cart);
+            } else { // add the item as it does not already exist
+                fannyPack.data.data.quantity = 1;
+                cart.push(fannyPack);
+                setCart(cart);
+            }
+        }
+    } catch (e) {
+        console.log(e.message);
+    }
+}
+```
+
+And there we go! We now have our shopping cart functioning with our local storage. Local storage is accessible through each of the front-end routes of our application, so when we go to the `Cart` component, we are able to load in the contents of the cart. We will do just this as we do our next step!
 
 ## Step 7: Handling locked down routes
+
 
 
