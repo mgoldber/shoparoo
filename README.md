@@ -1149,5 +1149,130 @@ And there we go! We now have our shopping cart functioning with our local storag
 
 ## Step 7: Handling locked down routes
 
+You're doing great! Next we are going to handle the interactions with our shopping cart, and work with locked down routes. Often, we do not want just anybody to be able to access all of the routes of our application. This poses risks such as allowing another user to complete a shopping cart purchase on another user's behalf. We use our token that we retrieved at login to act as a validation to ensure that the user that is calling the endpoint is properly verified. We are going to lock down our `/fannies/purchase` route using this idea.
+
+Within the `fannyRoutes.js` file, let's stub out our new endpoint.
+
+```js
+// fannyRoutes.js
+router.route('/purchase')
+    .post(async (req, res, next) => {
+        try {
+
+        } catch (e) {
+            next (e);
+        }
+    });
+```
+
+For the sake of our application, we would like this purchase route to simply calculate the total cost of all of the fanny packs in the shopping cart, and return this as a response. In a real world application, this route would likely handle something more like a credit card payment.
+
+We are able to use middleware to perform our authentication. Middleware are functions that are passed control during the execution of asynchronous functions. In other words, these functions will run prior to the rest of our asynchronous function running. Within the `middleware` folder, create a new file called `auth.js`.
+
+We are going to also need to write a new function within our `tokenService.js` that will verify our token for us. Jsonwebtoken offers a method called `.verify` that completes this verification for us. We will utilize this method within a helper function inside of our `tokenService.js` file.
+
+```js
+// tokenService.js
+exports.verifyToken = async (token) => {
+    return jwt.verify(token, SECRET);
+};
+```
+
+Now that we have this helper verification available to us, let's import these functions into our `auth.js` middleware.
+
+```js
+// auth.js
+const tokenService = require('../utils/tokenService');
+```
+
+When calling a locked down route, the expectation is that the token is passed in with the request. The token is passed through using an `Authorization` header. As we know of the prescence of this header, we will parse out the value that is passed along. The request body has this header in the event the call is made with axios. We will therefore access the header via the `req.body`.
+
+```js
+// auth.js
+module.exports = async (req, res, next) => {
+    const authHeader = req.body.headers['Authorization'];
+}
+```
+
+If the authorization header is not present, this means that the locked down route is not being properly used, and therefore is immediately an error. If the header is present, we need to get the token out of the header and then pass it to our verify token helper function to ensure that it is valid. 
+
+```js
+// auth.js
+module.exports = async (req, res, next) => {
+    const authHeader = req.body.headers['Authorization'];
+
+    if (!authHeader) {
+        next(new Error('invalid request'));
+    } else {
+        try {
+            const [prefix, token] = authHeader.split(' ');
+            const decoded = await tokenService.verifyToken(token);
+            if (decoded) {
+                req.token = decoded;
+                next();
+            } else {
+                next(new HTTP401Error());
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+}
+```
+
+Now that we have this functionality available to us, we can import it into our route files and quite simply lock down any routes that we choose. In `fannyRoutes.js` let's lock down our `/purchase` route. First, be sure to import the middleware:
+
+```js
+// fannyRoutes.js
+const requireAuth = require('../../middleware/auth');
+```
+
+And then use the middleware wherever you please!
+
+```js
+// fannyRoutes.js
+router.route('/purchase')
+    .post(requiresAuth, async (req, res, next) => {
+        try {
+
+        } catch (e) {
+            next (e);
+        }
+    });
+```
+
+Wow! Our route is now locked down. The middleware function will execute first, followed by the contents of the function of the function body. We are going to write one more helper function in our service file that will calculate the price total of a list of fannypack objects for us. The expectation here is that when the `/purchase` endpoint is being called, the front-end will pass in a list of fanny pack objects. In our `fannyService.js` file, let's create a function called `calculatePriceTotal` that will loop through each of the objects passed in and sum the values on the price property, taking into account the quantity attribute as well.
+
+```js
+// fannyService.js
+exports.calculatePriceTotal = async (fannies) => {
+    let costTotal = fannies.map((total) => {
+        return total.data.data.price * total.data.data.quantity;
+    }).reduce((sum, totalCost) => {
+        return sum + totalCost;
+    });
+    return costTotal;
+}
+```
+
+These service methods are already imported into our routes file, so let's make use of this new function within our `/purchase` route.
+
+```js
+// fannyRoutes.js
+router.route('/purchase')
+    .post(requiresAuth, async (req, res, next) => {
+        try {
+            const cartTotal = await fannyService.calculatePriceTotal(req.body.data.packs);
+            res.status(200).send({
+                totalPrice: cartTotal
+            });
+        } catch (e) {
+            next (e);
+        }
+    });
+```
+
+`req.body.data.packs` is how we expect to be passed the array of fanny pack objects.
+
 
 

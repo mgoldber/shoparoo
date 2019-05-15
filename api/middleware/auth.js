@@ -8,9 +8,7 @@ module.exports = async (req, res, next) => {
     } else {
         try {
             const [prefix, token] = authHeader.split(' ');
-            console.log(token);
             const decoded = await tokenService.verifyToken(token);
-            console.log(decoded);
             if (decoded) {
                 req.token = decoded;
                 next()
