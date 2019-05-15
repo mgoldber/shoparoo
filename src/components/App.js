@@ -6,8 +6,7 @@ import StoreItems from './StoreItems';
 import {
     BrowserRouter as Router,
     Route,
-    Switch,
-    Link
+    Switch
 } from 'react-router-dom';
 
 class App extends Component {

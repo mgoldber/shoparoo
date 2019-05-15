@@ -33,7 +33,7 @@ class Login extends Component {
 			this.props.hideLogin();
 		} catch (e) {
 			this.setState({ message: e })
-			console.log(e)
+			console.error(e)
 		}
 	}
 

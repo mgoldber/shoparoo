@@ -151,9 +151,7 @@ Next, we are going to ensure that we can use our middleware. We are going to cre
 
 You should now create an `index.js` file inside of your utils folder. We are going to write a function inside of the `index.js` file called `applyMiddleware`. 
 
-------------------- TODO: ADD NOTES ON HOW THIS FUNCTION ACTUALLY WORKS. ----------------------
-
-This function should be written as the following:
+This function should be written as the following. For each router that we pass to the function, the bodyParser middleware will be applied to it. :
 
 ```js
 // index.js
@@ -173,9 +171,54 @@ const { applyMiddleware } = require('./utils');
 
 We are using destructuring, as well as the built in functionality of require that specifies that since we are only telling it to look in the utils folder, and not which specific file to look for, that it will reference the `index.js` file.
 
-The next thing that we are going to do is ensure that our routing is set up. 
+We are going to going to use a module called `body-parser` that helps us in parsing incoming request bodies. We are going to parse our request bodies as JSON for ease of handling.
 
-The initial functionality that we want to set up is authentication.
+Navigate to your command line and run the following command:
+
+```shell
+npm install body-parser
+```
+
+Next, we are going to create a middleware folder at the root level of our `api` project. Create a file called `index.js` within this folder.
+
+Our `index.js` file is going to export a function that we can use to apply our bodyParser middleware to each of our routes. We are going to write this specific function within a new file called `common.js` that will also be created inside of our middleware folder.
+
+Inside our `common.js` file, we will import the body-parser module and will apply its properties to the router that we pass in. At the top of the file, lets import in `body-parser`:
+
+```js
+// common.js
+const bodyParser = require('body-parser');
+```
+
+Now we will apply the body-parser properties to the router we pass into the function. We are able to apply middleware by using the `.use` method. We are going to apply the `urlencoded` and `json` middlewares to each of our routers. The function will look like the following:
+
+```js
+// common.js
+exports.handleBodyRequestParsing = (router) => {
+    router.use(bodyParser.urlencoded({ extended: true }));
+    router.use(bodyParser.json());
+}
+```
+
+Now, within our `index.js` file nested in our middleware folder, we can require this function and export it.
+
+```js
+// index.js
+const { handleBodyRequestParsing } = require('./common');
+
+module.exports = [
+    handleBodyRequestParsing
+];
+```
+
+We can now bring in the middleware function we wrote so that we can pass it to our apply middleware function and apply body-parser to all of your routes. First we will add the middleware import to our `server.js` file.
+
+```js
+// server.js
+const middleWare = require('./middleware');
+```
+
+The next thing that we are going to do is ensure that our routing is set up. The initial functionality that we want to set up is authentication.
 
 ## Step 3: Authentication & Using our Routes 
 
@@ -1354,6 +1397,31 @@ async completePurchase() {
 ```
 
 The purchase variable should now hold the summation of the prices for the cart items that have been passed in.
+
+We will now set the `totalCartPrice` within our state so that we can access it for our receipt generation. Where we were completing the console.log of the purchase in our `completePurchase` function, we will instead set the state.  
+
+```js
+// Cart.js
+async completePurchase() {
+    try {
+        const purchase = await axios.post(`/api/fannies/purchase`, {
+            data: {
+                packs: this.state.cartItems
+            },
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        this.setState({
+            totalCartPrice: purchase
+        });
+    } catch(e) {
+        console.error(e.message);
+    }
+}
+```
+
+
 
 ---------TO DO: ADD IN WHATEVER IS BEING DONE WITH THE PRICE------------
 

@@ -1,13 +1,23 @@
 import React from 'react';
 import './navigation.css'
-
+import { Item } from './styles';
 import { NavLink } from 'react-router-dom';
+import { withStyles } from '@material-ui/core/styles';
 import { Button } from '../GlobalStyles.js'
-import styled from 'styled-components';
 
-const Item = styled.li`
-    align-self: center;
-`
+const styles = {
+	nav: {
+		'display': 'flex',
+		'justify-content': 'space-between',
+		'padding': '20px 0' 
+	},
+	list: {
+
+	},
+	link: {
+
+	}, 
+}
 
 const Navigation = ({ toggleLogin, user, logout }) => {
     return (
@@ -38,4 +48,4 @@ const Navigation = ({ toggleLogin, user, logout }) => {
     )
 }
 
-export default Navigation;
+export default withStyles(styles)(Navigation);

@@ -1,15 +1,11 @@
 import React, { Component } from 'react';
+import axios from 'axios';
+import { getCart, addItem } from '../../services/cartService'; 
+
 import './storeitems.css'
 import { Wrapper } from './styles';
-import GridList from '@material-ui/core/GridList';
-import GridListTile from '@material-ui/core/GridListTile';
-import GridListTileBar from '@material-ui/core/GridListTileBar';
-import IconButton from '@material-ui/core/IconButton';
+import { GridList, GridListTile, GridListTileBar, IconButton } from '@material-ui/core';
 import AddShoppingCart from '@material-ui/icons/AddShoppingCart';
-
-import axios from 'axios';
-
-import { getCart, addItem } from '../../services/cartService'; 
 
 class StoreItems extends Component {
 
@@ -23,7 +19,6 @@ class StoreItems extends Component {
     async addToShoppingCart(itemId) {
 
         try {
-            // POST request to add item to shopping cart
             // Need to get the user token as this is a locked down route
             // Get Fanny Pack Object by ID
             const fannyPack = await axios.get(`/api/fannies/${itemId}`);

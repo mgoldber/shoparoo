@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const express = require('express');
 const http = require('http');
 
-const { URL } = require('./utils/constants');
+const { URL, PORT } = require('./utils/constants');
 
 // Create main express instance
 const router = express();
@@ -19,9 +19,6 @@ const middleWare = require('./middleware');
 const { router: userRoutes } = require('./routes/users/userRoutes');
 const { router: fannyRoutes} = require('./routes/fannies/fannyRoutes');
 
-// Require constants
-const { PORT } = require('./utils/constants');
-
 // Apply general middleware
 applyMiddleware(middleWare, router);
 
@@ -31,7 +28,6 @@ router.use('/api/fannies', fannyRoutes);
 
 // Create a server from express instance
 const server = http.createServer(router);
-
 
 mongoose
     .connect(URL, { useNewUrlParser: true })

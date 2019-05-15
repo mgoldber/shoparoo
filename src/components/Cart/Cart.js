@@ -1,24 +1,25 @@
 import React, { Component } from 'react';
-
-import { Wrapper } from './styles';
-import GridList from '@material-ui/core/GridList';
-import GridListTile from '@material-ui/core/GridListTile';
-import GridListTileBar from '@material-ui/core/GridListTileBar';
-import IconButton from '@material-ui/core/IconButton';
-import AddShoppingCart from '@material-ui/icons/AddShoppingCart';
-
-
 import axios from 'axios';
 import { getToken } from '../../services/tokenService';
-
 import { getCart } from '../../services/cartService'; 
+
+import { Wrapper } from './styles';
+import { GridList, GridListTile, GridListTileBar, IconButton, withStyles } from '@material-ui/core';
+import AddShoppingCart from '@material-ui/icons/AddShoppingCart';
+
+const styles = {
+    icon: {
+        'color': 'blue'
+    }
+}
 
 class Cart extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            cartItems: getCart()
+            cartItems: getCart(),
+            totalCartPrice: 0
         }
     }
 
@@ -34,18 +35,16 @@ class Cart extends Component {
                     }
                 }
             );
-            console.log(purchase);
+            this.setState({
+                totalCartPrice: purchase
+            });
         } catch(e) {
             console.error(e.message);
         }
     }
 
-    componentDidMount() {
-        // Access the cart stored in local storage
-        console.log(this.state.cartItems);
-    }
-
     render() {
+        const { classes } = this.props;
         return (
             <Wrapper>
                 <GridList cellHeight={500} className="gridList">
@@ -54,12 +53,12 @@ class Cart extends Component {
                             <img src={item.data.data.photoUrl} />
                             <GridListTileBar
                                 title={item.data.data.name}
-                                subtitle={<span>by: {item.data.data.name}</span>}
+                                subtitle={"Quantity: " + item.data.data.quantity}
                             />
                         </GridListTile>
                     ))}
-                    <IconButton onClick={() => {this.completePurchase()}} className="icon">
-                        <AddShoppingCart className="icon" />
+                    <IconButton onClick={() => {this.completePurchase()}} classes={{icon: classes.icon}}>
+                        <AddShoppingCart classes={{icon: classes.icon}} />
                     </IconButton>
                     
                 </GridList>
@@ -68,4 +67,4 @@ class Cart extends Component {
     }
 }
 
-export default Cart;
+export default withStyles(styles)(Cart);
