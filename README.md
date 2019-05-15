@@ -58,11 +58,19 @@ npm install nodemon
 ```
 All dependencies will be added into the `dependencies` object in your package.json file. Whenever you want to run the server of your application, you will go to the root of your application in the command line, and can type `npm run start:server`.
 
-/---------------------------------------------
-ADD NOTE ON SPECIAL PROXY THINGY THAT CREATE-REACT-APP REQUIRES IN DEVELOPMENT
-https://facebook.github.io/create-react-app/docs/proxying-api-requests-in-development
-THIS IS TO ENSURE THAT A SERVER AND CLIENT CAN BE RUNNING IN THE SAME PROJECT
----------------------------------------------/
+#### proxy
+
+As a by-product of serving our front-end React application from same host and port as our back-end application (i.e. we do not have a separate code base for our front-end and back-end code), we need to add a special property into our `package.json` file. This is the `proxy` property. This allows us to write our endpoint URLs like `/api/cart` without worrying about specifying a port, or having to do any form of a redirection.  
+
+Within the `package.json` file, add the following line at the top level of the object:
+
+```json
+"proxy": "http://localhost:4000"
+```
+
+This also conveniently allows us to avoid any CORS issues that may come up as a result of this set up. Note that this is only utilized in development, as when the project is launched the front-end and back-end are launched in separate environments, and therefore do not interfere with one another.
+
+If you are interested in reading more on this, the official create-react-app documentation has a great description [here](https://facebook.github.io/create-react-app/docs/proxying-api-requests-in-development)!
 
 ### server.js
 
@@ -815,8 +823,7 @@ node seed.js
 
 Verify that the data populated within your database. If all worked as planned, you should see a new collection called `fannies` within your `shoparoo` database. If you click through the documents, you should see that the fake data has been populated.
 
-
------------------- TO DO: MAKE A DATABASE DESIGN DIAGRAM ---------------------
+----------TO DO: MAKE A DATABASE DESIGN DIAGRAM ---------
 
 ## Step 6: Routes, routes, routes
 
@@ -1272,7 +1279,80 @@ router.route('/purchase')
     });
 ```
 
-`req.body.data.packs` is how we expect to be passed the array of fanny pack objects.
+`req.body.data.packs` is how we expect to be passed the array of fanny pack objects. We then return the `totalPrice` as the response from the request.
 
+### Front-end
+
+Let's use the new end point on our front-end! The first action we want to complete is loading our cart items so that we can display them on the page. Recall, our cart items are stored in local storage, and are not being loaded via an API call. We are going to load our cart items into our state. Recall that we wrote a `getCart` function earlier in our cart service that allows us to access all of the cart items.
+
+Let's import this into our file so that we can use it:
+
+```js
+// Cart.js
+import { getCart } from '../../services/cartService';
+```
+
+Now let's use this function to assign our cartItems in state.
+
+```js
+// Cart.js
+constructor(props) {
+    super(props);
+    this.state = {
+        cartItems: getCart()
+    }
+}
+```
+
+Within the render function, you will see that the code is already set to map through the cartItems, so you should start to see your cart items start appearing on the page!
+
+Finally, we are going to write the `completePurchase` function, which gets called when the purchase button the page is selected. It is within here that we will be using our `/purchase` endpoint.
+
+Let's start with the function stub:
+
+```js
+// Cart.js
+async completePurchase() {
+    try {
+        
+    } catch(e) {
+        console.error(e.message);
+    }
+}
+```
+
+Recall, when we call the endpoint in axios, we are going to have to pass in information with the request. This includes the list of the fanny packs in the cart, as well as the token that will be passed within the `Authorization` header.
+
+Let's import the `getToken` function that we wrote in our tokenService. 
+
+```js
+// Cart.js
+import { getToken } from '../../services/tokenService';
+```
+
+We can now format our axios request
+
+```js
+// Cart.js
+async completePurchase() {
+    try {
+        const purchase = await axios.post(`/api/fannies/purchase`, {
+            data: {
+                packs: this.state.cartItems
+            },
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        console.log(purchase);
+    } catch(e) {
+        console.error(e.message);
+    }
+}
+```
+
+The purchase variable should now hold the summation of the prices for the cart items that have been passed in.
+
+---------TO DO: ADD IN WHATEVER IS BEING DONE WITH THE PRICE------------
 
 
