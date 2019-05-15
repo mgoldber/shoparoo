@@ -20,7 +20,7 @@ The first script that we will add in should look like this, and will be how we s
 ```json
 // package.json
 "scripts": {
-    "start:client": "react-scripts start", // This is the first script we want to add in.
+    "start:client": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -130,7 +130,7 @@ Type the following inside of your `constants.js` file:
 
 ```js
 // constants.js
-exports.URL = process.env.MONGODB_URI || 'mongodb://localhost:27017/shoparoo'
+exports.URL = process.env.MONGODB_URI || 'mongodb://localhost:27017/shoparoo';
 exports.PORT = process.env.PORT || 3001;
 ```
 
@@ -464,6 +464,7 @@ const jwt = require('jsonwebtoken');
 We are going to create a function to issue a new token. We are going to pass the user information in so that we can be sure that the token that is being generated is the one related to the specified user. Each entry in our database has a unique ID that we can use to uniquely identify the user.:
 
 ```js
+// tokenService.js
 exports.issueToken = async (userData) => {
     const { _id: id } = userData;
 
@@ -770,6 +771,7 @@ We are going to use the `NavLink` which is very similar to `Link`, however, it i
 Inside of the `Item` styled component for Home and Cart, we will add the necessary NavLink component. When we click on Home in the navigation bar, we would like to re-route to the root of our application, or the `/` route. When we click on the cart option, we would like to navigate to the `/cart` URL. This will look like the following:
 
 ```jsx
+// Navigation.js
 <ul className="list">
     <Item>
         <NavLink exact to={`/`} activeClassName="active" className="link">
