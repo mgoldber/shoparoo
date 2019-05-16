@@ -36,9 +36,9 @@ router.route('/:id')
 router.route('/purchase')
     .post(requireAuth, async (req, res, next) => {
         try {
-            const cartTotal = await fannyService.calculatePriceTotal(req.body.data.packs);
+            const orderNum = await fannyService.generateOrderNumber();
             res.status(200).send({
-                totalPrice: cartTotal
+                orderNum: orderNum
             });
         } catch (e) {
             next(e);

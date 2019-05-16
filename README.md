@@ -1293,17 +1293,19 @@ router.route('/purchase')
     });
 ```
 
-Wow! Our route is now locked down. The middleware function will execute first, followed by the contents of the function of the function body. We are going to write one more helper function in our service file that will calculate the price total of a list of fannypack objects for us. The expectation here is that when the `/purchase` endpoint is being called, the front-end will pass in a list of fanny pack objects. In our `fannyService.js` file, let's create a function called `calculatePriceTotal` that will loop through each of the objects passed in and sum the values on the price property, taking into account the quantity attribute as well.
+Wow! Our route is now locked down. The middleware function will execute first, followed by the contents of the function body. We are going to write one more helper function in our service file that will generate an order confirmation number for us. The expectation here is that when the `/purchase` endpoint is called, the front-end will pass in a list of fanny pack objects. In our `fannyService.js` file, let's create a function called `generateOrderNumber` that will generate a random 8 character order number for us.
 
 ```js
 // fannyService.js
-exports.calculatePriceTotal = async (fannies) => {
-    let costTotal = fannies.map((total) => {
-        return total.data.data.price * total.data.data.quantity;
-    }).reduce((sum, totalCost) => {
-        return sum + totalCost;
-    });
-    return costTotal;
+exports.generateOrderNumber = () => {
+    const orderConfirmationLen = 8;
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let orderNum = '';
+    for (let i = 0; i < orderConfirmationLen; i++) {
+       orderNum += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return orderNum;
 }
 ```
 
@@ -1314,9 +1316,9 @@ These service methods are already imported into our routes file, so let's make u
 router.route('/purchase')
     .post(requiresAuth, async (req, res, next) => {
         try {
-            const cartTotal = await fannyService.calculatePriceTotal(req.body.data.packs);
+            const orderNum = await fannyService.generateOrderNumber();
             res.status(200).send({
-                totalPrice: cartTotal
+                orderNum: orderNum
             });
         } catch (e) {
             next (e);
@@ -1324,11 +1326,11 @@ router.route('/purchase')
     });
 ```
 
-`req.body.data.packs` is how we expect to be passed the array of fanny pack objects. We then return the `totalPrice` as the response from the request.
+We then return the `orderNum` as the response from the request.
 
 ### Front-end
 
-Let's use the new end point on our front-end! The first action we want to complete is loading our cart items so that we can display them on the page. Recall, our cart items are stored in local storage, and are not being loaded via an API call. We are going to load our cart items into our state. Recall that we wrote a `getCart` function earlier in our cart service that allows us to access all of the cart items.
+Let's use the new endpoint on our front-end! The first action we want to complete is loading our cart items so that we can display them on the page. Recall, our cart items are stored in local storage, and are not being loaded via an API call. We are going to load our cart items into our state. Recall that we wrote a `getCart` function earlier in our cart service that allows us to access all of the cart items.
 
 Let's import this into our file so that we can use it:
 
@@ -1366,7 +1368,7 @@ async completePurchase() {
 }
 ```
 
-Recall, when we call the endpoint in axios, we are going to have to pass in information with the request. This includes the list of the fanny packs in the cart, as well as the token that will be passed within the `Authorization` header.
+Recall, when we call the endpoint in axios, we are going to have to pass in information with the request. The information that we will be passing is the token that will be passed within the `Authorization` header.
 
 Let's import the `getToken` function that we wrote in our tokenService. 
 
@@ -1375,45 +1377,39 @@ Let's import the `getToken` function that we wrote in our tokenService.
 import { getToken } from '../../services/tokenService';
 ```
 
-We can now format our axios request
+We can now format our axios request:
 
 ```js
 // Cart.js
 async completePurchase() {
     try {
-        const purchase = await axios.post(`/api/fannies/purchase`, {
-            data: {
-                packs: this.state.cartItems
-            },
+        const orderConfirmation = await axios.post(`/api/fannies/purchase`, {
             headers: {
                 'Authorization': `Bearer ${getToken()}`
             }
         });
-        console.log(purchase);
+        console.log(orderConfirmation);
     } catch(e) {
         console.error(e.message);
     }
 }
 ```
 
-The purchase variable should now hold the summation of the prices for the cart items that have been passed in.
+The `orderConfirmation` variable should now hold the randomly generated order confirmation number.
 
-We will now set the `totalCartPrice` within our state so that we can access it for our receipt generation. Where we were completing the console.log of the purchase in our `completePurchase` function, we will instead set the state.  
+We will now set the `orderConfirmationNum` within our state so that we can access it for our receipt generation. Where we were completing the console.log of the purchase in our `completePurchase` function, we will instead set the new state.  
 
 ```js
 // Cart.js
 async completePurchase() {
     try {
-        const purchase = await axios.post(`/api/fannies/purchase`, {
-            data: {
-                packs: this.state.cartItems
-            },
+        const orderConfirmation = await axios.post(`/api/fannies/purchase`, {
             headers: {
                 'Authorization': `Bearer ${getToken()}`
             }
         });
         this.setState({
-            totalCartPrice: purchase
+            orderConfirmationNum: orderConfirmation
         });
     } catch(e) {
         console.error(e.message);
@@ -1421,8 +1417,12 @@ async completePurchase() {
 }
 ```
 
+At the bottom of the render function, you will find a conditional render that displays in the event that `orderConfirmationNum` is a string longer than 0 characters. As a result, now when you select the `Place Order` button, if the call to the API goes as planned, we will now see a confirmation message with our order number.
 
 
----------TO DO: ADD IN WHATEVER IS BEING DONE WITH THE PRICE------------
 
+Options for extension:
+
+1. 
+2. 
 

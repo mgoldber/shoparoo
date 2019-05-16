@@ -28,3 +28,15 @@ exports.calculatePriceTotal = async(fannies) => {
     });
     return costTotal;
 }
+
+exports.generateOrderNumber = () => {
+    const orderConfirmationLen = 8;
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let orderNum = '';
+    for (let i = 0; i < orderConfirmationLen; i++) {
+        orderNum += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    console.log(orderNum);
+    return orderNum;
+}
