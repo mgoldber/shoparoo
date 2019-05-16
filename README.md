@@ -1423,6 +1423,6 @@ At the bottom of the render function, you will find a conditional render that di
 
 Options for extension:
 
-1. 
+1. Make the cart a persisting cart by adding the cart items into their own collection in the database that is associated with the logged in user.
 2. 
 

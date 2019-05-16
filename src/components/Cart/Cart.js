@@ -49,7 +49,6 @@ class Cart extends Component {
                     }
                 }
             );
-            console.log(orderConfirmation);
             this.setState({
                 orderConfirmationNum: orderConfirmation.data.orderNum
             });
