@@ -42,7 +42,7 @@ class Login extends Component {
 	}
 
 	render() {
-		const { type, success } = this.state
+		const { type } = this.state
 
 		return (
 			<Wrapper>
